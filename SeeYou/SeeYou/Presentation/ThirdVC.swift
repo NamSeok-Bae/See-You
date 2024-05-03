@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  ThirdVC.swift
 //  SeeYou
 //
 //  Created by 배남석 on 2024/05/03.
@@ -7,12 +7,8 @@
 
 import UIKit
 
-class ViewController: UIViewController, HorizontallyFadeAnimatorDelegate {
-    // MARK: - UI properties
-    
-    // MARK: - Properties
-    
-    // MARK: - Lifecycles
+class ThirdVC: UIViewController, HorizontallyFadeAnimatorDelegate {
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -20,11 +16,9 @@ class ViewController: UIViewController, HorizontallyFadeAnimatorDelegate {
         setupNavigationBar()
     }
     
-    // MARK: - Helpers
     private func setupNavigationBar() {
-        title = "홈"
+        title = "쪽지함"
         navigationController?.navigationBar.tintColor = .black
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
     }
 }
-
