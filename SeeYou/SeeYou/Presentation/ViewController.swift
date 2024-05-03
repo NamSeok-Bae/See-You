@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, HorizontallyFadeAnimatorDelegate {
     // MARK: - UI properties
     
     // MARK: - Properties
@@ -15,9 +15,16 @@ class ViewController: UIViewController {
     // MARK: - Lifecycles
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        
+        self.view.backgroundColor = .white
+        setupNavigationBar()
     }
     
     // MARK: - Helpers
+    private func setupNavigationBar() {
+        title = "홈"
+        navigationController?.navigationBar.tintColor = .black
+        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
+    }
 }
 
