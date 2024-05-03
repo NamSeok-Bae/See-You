@@ -7,8 +7,14 @@
 
 import UIKit
 
-class LoginVC: UIViewController {
+class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     // MARK: - UI properties
+    private lazy var plusButton = UIBarButtonItem(
+        image: UIImage(systemName: "multiply"),
+        style: .plain,
+        target: self,
+        action: #selector(buttonDidTapped(_:))
+    )
     
     // MARK: - Properties
     
@@ -16,8 +22,28 @@ class LoginVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        configureUI()
+        setupNavigationBar()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        setupNavigationBar()
     }
     
     // MARK: - Helpers
+    private func configureUI() {
+        self.view.backgroundColor = .white
+    }
+    
+    private func setupNavigationBar() {
+        title = "로그인"
+        navigationItem.rightBarButtonItem = plusButton
+        navigationController?.navigationBar.tintColor = .black
+        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
+    }
+    
+    @objc private func buttonDidTapped(_ sender: Any) {
+        self.tabBarController?.selectedIndex = 0
+    }
 }
