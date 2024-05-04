@@ -28,7 +28,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     
     private let emailLabel: UILabel = {
         let label = UILabel()
-        label.text = "이메일"
+        label.text = NSLocalizedString("Email", comment: "")
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         label.textColor = .Palette.gray700
         label.textAlignment = .left
@@ -39,7 +39,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     private lazy var emailTextField: UITextField = {
         let textField = UITextField()
         textField.attributedPlaceholder = NSAttributedString(
-            string: "사용중인 이메일 주소를 입력해주세요.",
+            string: NSLocalizedString("Email_Placeholder", comment: ""),
             attributes: [.foregroundColor : UIColor.Palette.gray500])
         textField.font = UIFont.systemFont(ofSize: 16)
         textField.layer.cornerRadius = 8
@@ -57,7 +57,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     
     private let emailErrorLabel: UILabel = {
         let label = UILabel()
-        label.text = "이메일 주소를 확인해주세요."
+        label.text = NSLocalizedString("Email_Validate_Error", comment: "")
         label.textColor = .Palette.red500
         label.font = .systemFont(ofSize: 12)
         label.textAlignment = .left
@@ -68,7 +68,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     
     private let passwordLabel: UILabel = {
         let label = UILabel()
-        label.text = "비밀번호"
+        label.text = NSLocalizedString("Password", comment: "")
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         label.textColor = .Palette.gray700
         label.textAlignment = .left
@@ -79,7 +79,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     private lazy var passwordTextField: UITextField = {
         let textField = UITextField()
         textField.attributedPlaceholder = NSAttributedString(
-            string: "8자 이상 입력해주세요.",
+            string: NSLocalizedString("Password_Placeholder", comment: ""),
             attributes: [.foregroundColor : UIColor.Palette.gray500])
         textField.font = UIFont.systemFont(ofSize: 16)
         textField.layer.cornerRadius = 8
@@ -98,7 +98,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     
     private let passwordErrorLabel: UILabel = {
         let label = UILabel()
-        label.text = "최소 8자를 입력해주세요."
+        label.text = NSLocalizedString("Password_Validate_Error", comment: "")
         label.textColor = .Palette.red500
         label.font = .systemFont(ofSize: 12)
         label.textAlignment = .left
@@ -110,7 +110,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     private lazy var loginButton: UIButton = {
         let button = UIButton()
         button.isEnabled = false
-        button.setTitle("로그인", for: .normal)
+        button.setTitle(NSLocalizedString("Login", comment: ""), for: .normal)
         button.setTitleColor(.Palette.gray0, for: .normal)
         button.setTitleColor(UIColor(hexString: "BDBDBD"), for: .disabled)
         button.setBackgroundColor(.Palette.gray100, for: .disabled)
@@ -127,7 +127,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     
     private lazy var signUpButton: UIButton = {
         let button = UIButton()
-        button.setTitle("회원가입", for: .normal)
+        button.setTitle(NSLocalizedString("SignUp", comment: ""), for: .normal)
         button.setTitleColor(.Palette.primary500, for: .normal)
         button.layer.borderColor = UIColor.Palette.primary500.cgColor
         button.layer.borderWidth = 1
@@ -141,7 +141,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     
     private lazy var passwordResetButton: UIButton = {
         let button = UIButton()
-        let text = "비밀번호 재설정"
+        let text = NSLocalizedString("Password_Reset", comment: "")
         button.setTitleColor(.Palette.gray700, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14)
         let attributedString = NSMutableAttributedString(string: text)
@@ -193,6 +193,8 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
             }).subscribe(onNext: { event in
                 if event.0.count > 0 && event.1.count > 0 {
                     self.loginButton.isEnabled = true
+                } else {
+                    self.loginButton.isEnabled = false
                 }
             }).disposed(by: disposeBag)
     }
@@ -227,7 +229,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
         }
     }
     
-    func validateEmail(_ input: String) -> Bool {
+    private func validateEmail(_ input: String) -> Bool {
         let regex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         let emailPredicate = NSPredicate(format: "SELF MATCHES %@", regex)
         let isValid = emailPredicate.evaluate(with: input)
@@ -235,7 +237,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
         return isValid
     }
     
-    func validatePassword(_ input: String) -> Bool {
+    private func validatePassword(_ input: String) -> Bool {
         let regex = "^(?=.*[A-Za-z])(?=.*[0-9]).{8,30}"
         let predicate = NSPredicate(format: "SELF MATCHES %@", regex)
         let isValid = predicate.evaluate(with: input)

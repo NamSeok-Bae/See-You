@@ -1,0 +1,20 @@
+/* 
+  Localizable.strings
+  SeeYou
+
+  Created by 배남석 on 2024/05/04.
+  
+*/
+
+// MARK: - 로그인 화면
+"Email" = "邮箱";
+"Email_Placeholder" = "사용중인 이메일 주소를 입력해주세요.";
+"Email_Validate_Error" = "* 请再次确认一下邮箱地址。";
+
+"Password" = "密码";
+"Password_Placeholder" = "8자 이상 입력해주세요.";
+"Password_Validate_Error" = "최소 8자를 입력해주세요.";
+
+"Login" = "登录";
+"SignUp" = "注册会员";
+"Password_Reset" = "重置密码";
