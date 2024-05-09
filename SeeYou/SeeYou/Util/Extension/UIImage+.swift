@@ -8,5 +8,10 @@
 import UIKit
 
 extension UIImage {
-    static let logoImage = UIImage(named: "logo")
+    static let logo = UIImage(named: "logo")
+    static let logo_fill = UIImage(named: "logo_fill")
+    static let multiply = UIImage(systemName: "multiply")
+    static let signup_customer = UIImage(named: "signup_customer")
+    static let signup_guide = UIImage(named: "signup_guide")
+    static let right_arrow = UIImage(named: "right_arrow")
 }

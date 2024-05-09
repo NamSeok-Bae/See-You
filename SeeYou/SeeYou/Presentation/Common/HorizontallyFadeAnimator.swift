@@ -7,7 +7,7 @@
 
 import UIKit
 
-@objc protocol HorizontallyFadeAnimatorDelegate: class {
+@objc protocol HorizontallyFadeAnimatorDelegate: AnyObject {
     
     @objc optional func transitionWillStartWith(animator: HorizontallyFadeAnimator)
     @objc optional func transitionDidEndWith(animator: HorizontallyFadeAnimator)
