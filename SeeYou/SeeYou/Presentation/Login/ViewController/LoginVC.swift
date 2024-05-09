@@ -12,8 +12,8 @@ import RxCocoa
 
 class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     // MARK: - UI properties
-    private lazy var plusButton = UIBarButtonItem(
-        image: UIImage(systemName: "multiply"),
+    private lazy var multiplyButton = UIBarButtonItem(
+        image: .multiply,
         style: .plain,
         target: self,
         action: #selector(buttonDidTapped(_:))
@@ -21,14 +21,14 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     
     private let logoImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = .logoImage
+        imageView.image = .logo
         
         return imageView
     }()
     
     private let emailLabel: UILabel = {
         let label = UILabel()
-        label.text = NSLocalizedString("Email", comment: "")
+        label.text = SYText.email
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         label.textColor = .Palette.gray700
         label.textAlignment = .left
@@ -39,10 +39,10 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     private lazy var emailTextField: UITextField = {
         let textField = UITextField()
         textField.attributedPlaceholder = NSAttributedString(
-            string: NSLocalizedString("Email_Placeholder", comment: ""),
+            string: SYText.email_placeholder,
             attributes: [.foregroundColor : UIColor.Palette.gray500])
         textField.font = UIFont.systemFont(ofSize: 16)
-        textField.layer.cornerRadius = 8
+        textField.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
         textField.layer.borderColor = UIColor.Palette.gray200.cgColor
         textField.layer.borderWidth = 1
         let view = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
@@ -57,7 +57,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     
     private let emailErrorLabel: UILabel = {
         let label = UILabel()
-        label.text = NSLocalizedString("Email_Validate_Error", comment: "")
+        label.text = SYText.email_validate_error
         label.textColor = .Palette.red500
         label.font = .systemFont(ofSize: 12)
         label.textAlignment = .left
@@ -68,7 +68,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     
     private let passwordLabel: UILabel = {
         let label = UILabel()
-        label.text = NSLocalizedString("Password", comment: "")
+        label.text = SYText.password
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         label.textColor = .Palette.gray700
         label.textAlignment = .left
@@ -79,10 +79,10 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     private lazy var passwordTextField: UITextField = {
         let textField = UITextField()
         textField.attributedPlaceholder = NSAttributedString(
-            string: NSLocalizedString("Password_Placeholder", comment: ""),
+            string: SYText.password_placeholder,
             attributes: [.foregroundColor : UIColor.Palette.gray500])
         textField.font = UIFont.systemFont(ofSize: 16)
-        textField.layer.cornerRadius = 8
+        textField.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
         textField.layer.borderColor = UIColor.Palette.gray200.cgColor
         textField.layer.borderWidth = 1
         let view = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
@@ -98,7 +98,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     
     private let passwordErrorLabel: UILabel = {
         let label = UILabel()
-        label.text = NSLocalizedString("Password_Validate_Error", comment: "")
+        label.text = SYText.password_validate_error
         label.textColor = .Palette.red500
         label.font = .systemFont(ofSize: 12)
         label.textAlignment = .left
@@ -110,14 +110,14 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     private lazy var loginButton: UIButton = {
         let button = UIButton()
         button.isEnabled = false
-        button.setTitle(NSLocalizedString("Login", comment: ""), for: .normal)
+        button.setTitle(SYText.login, for: .normal)
         button.setTitleColor(.Palette.gray0, for: .normal)
         button.setTitleColor(UIColor(hexString: "BDBDBD"), for: .disabled)
         button.setBackgroundColor(.Palette.gray100, for: .disabled)
         button.setBackgroundColor(.Palette.primary500, for: .normal)
         button.clipsToBounds = true
         button.layer.borderWidth = 1
-        button.layer.cornerRadius = 8
+        button.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
         button.layer.borderColor = UIColor.clear.cgColor
         button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
         button.tag = 1
@@ -127,11 +127,11 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     
     private lazy var signUpButton: UIButton = {
         let button = UIButton()
-        button.setTitle(NSLocalizedString("SignUp", comment: ""), for: .normal)
+        button.setTitle(SYText.signup, for: .normal)
         button.setTitleColor(.Palette.primary500, for: .normal)
         button.layer.borderColor = UIColor.Palette.primary500.cgColor
         button.layer.borderWidth = 1
-        button.layer.cornerRadius = 8
+        button.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
         button.layer.backgroundColor = UIColor.Palette.gray0.cgColor
         button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
         button.tag = 2
@@ -141,7 +141,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     
     private lazy var passwordResetButton: UIButton = {
         let button = UIButton()
-        let text = NSLocalizedString("Password_Reset", comment: "")
+        let text = SYText.password_reset
         button.setTitleColor(.Palette.gray700, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14)
         let attributedString = NSMutableAttributedString(string: text)
@@ -221,7 +221,9 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
                 passwordErrorLabel.isHidden = false
             }
         case 2:
-            print("touch signup btn")
+            self.navigationController?.pushViewController(
+                SignUpVC(),
+                animated: true)
         case 3:
             print("touch password reset btn")
         default:
@@ -252,6 +254,7 @@ extension LoginVC {
         enum ImageView {
             static let topMargin: CGFloat = .toScaledHeight(value: 24)
             static let height: CGFloat = .toScaledHeight(value: 40)
+            static let width: CGFloat = .toScaledWidth(value: 64.8)
         }
         enum Label {
             static let leadingMargin: CGFloat = .toScaledWidth(value: 20)
@@ -304,8 +307,8 @@ extension LoginVC {
     }
     
     private func setupNavigationBar() {
-        title = "로그인"
-        navigationItem.rightBarButtonItem = plusButton
+        title = SYText.login
+        navigationItem.rightBarButtonItem = multiplyButton
         navigationController?.navigationBar.tintColor = .black
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
     }
@@ -329,6 +332,7 @@ extension LoginVC {
         logoImageView.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide).offset(Constants.ImageView.topMargin)
             $0.height.equalTo(Constants.ImageView.height)
+            $0.width.equalTo(Constants.ImageView.width)
             $0.centerX.equalToSuperview()
         }
     }
