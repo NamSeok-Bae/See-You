@@ -9,6 +9,7 @@ import UIKit
 
 protocol CheckBoxViewDelegate: AnyObject {
     func validateButtonTags(_ tag: Int)
+    func touchUpLabelButton(_ tag: Int)
 }
 
 class CheckBoxView: UIView {
@@ -133,7 +134,7 @@ class CheckBoxView: UIView {
         case 1:
             print("label Button Tapped")
             checkBoxButton.isSelected = checkBoxButton.isSelected ? false : true
-            delegate?.validateButtonTags(self.tag)
+            delegate?.touchUpLabelButton(self.tag)
         default:
             break
         }

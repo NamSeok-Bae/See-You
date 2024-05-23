@@ -257,7 +257,6 @@ extension SignUpBottomSheetVC: CheckBoxViewDelegate {
     
     func validateButtonTags(_ tag: Int) {
         checkBoxTagArray[tag] = !checkBoxTagArray[tag]
-        if tag != 1 && checkBoxTagArray[tag] { presentTermOfUsePage(tag) }
         
         for i in 1...3 {
             if checkBoxTagArray[i] == false {
@@ -266,5 +265,9 @@ extension SignUpBottomSheetVC: CheckBoxViewDelegate {
             }
         }
         continueButton.isEnabled = true
+    }
+    
+    func touchUpLabelButton(_ tag: Int) {
+        if tag != 1 { presentTermOfUsePage(tag) }
     }
 }
