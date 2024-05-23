@@ -78,7 +78,7 @@ class SignUpVC: UIViewController {
     
     // MARK: - Helpers
     @objc private func buttonDidTapped(_ sender: UIButton) {
-        self.tabBarController?.selectedIndex = 0
+        NotificationCenter.default.post(name: NSNotification.Name("MultiplyButton"), object: nil)
     }
     
     @objc private func viewDidTapped(_ sender: UITapGestureRecognizer) {
@@ -88,6 +88,7 @@ class SignUpVC: UIViewController {
         case 1:
             print("Did Tapped sign_customer_view")
             let vc = SignUpBottomSheetVC()
+            vc.delegate = self
             vc.modalPresentationStyle = .overFullScreen
             vc.modalTransitionStyle = .coverVertical
             self.present(vc, animated: true)
@@ -98,6 +99,16 @@ class SignUpVC: UIViewController {
         }
     }
 }
+
+// MARK: - SignUpBottomSheetVCDelegate
+extension SignUpVC: SignUpBottomSheetVCDelegate {
+    func touchUpContinueButton() {
+        self.navigationController?.pushViewController(
+            SignUpEmailConfirmVC(),
+            animated: true)
+    }
+}
+
 
 // MARK: - Setup & Configure Functions
 extension SignUpVC {

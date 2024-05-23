@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol CheckBoxViewDelegate: AnyObject {
+    func validateButtonTags(_ tag: Int)
+}
+
 class CheckBoxView: UIView {
     enum Constants {
         enum CheckBoxButton {
@@ -21,14 +25,22 @@ class CheckBoxView: UIView {
     // MARK: - UI properties
     private lazy var checkBoxButton: UIButton = {
         let button = UIButton()
-        let imageConfig = UIImage.SymbolConfiguration(pointSize: Constants.CheckBoxButton.height, weight: .light)
-        let image = UIImage(systemName: "square")?.withConfiguration(imageConfig)
-        let fillImage = UIImage(systemName: "checkmark.square.fill")?.withConfiguration(imageConfig)
+        let imageConfig = UIImage.SymbolConfiguration(
+            pointSize: Constants.CheckBoxButton.height,
+            weight: .light)
+        let image = UIImage(systemName: "square")?
+            .withConfiguration(imageConfig)
+            .withTintColor(.Palette.gray400, renderingMode: .alwaysOriginal)
+        let fillImage = UIImage(systemName: "checkmark.square.fill")?
+            .withConfiguration(imageConfig)
+            .withTintColor(.Palette.primary500, renderingMode: .alwaysOriginal)
         
         button.setImage(image, for: .normal)
         button.setImage(fillImage, for: .selected)
-        button.tintColor = .Palette.primary500
-        button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
+        button.addTarget(
+            self,
+            action: #selector(buttonDidTapped(_:)),
+            for: .touchUpInside)
         button.tag = 0
         
         return button
@@ -38,14 +50,17 @@ class CheckBoxView: UIView {
         let button = UIButton()
         button.setTitleColor(.Palette.gray1000, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16)
-        button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
+        button.addTarget(
+            self,
+            action: #selector(buttonDidTapped(_:)),
+            for: .touchUpInside)
         button.tag = 1
         
         return button
     }()
     
     // MARK: - Properties
-    
+    weak var delegate: CheckBoxViewDelegate?
     
     // MARK: - Lifecycles
     init(text: String, underLine: Bool) {
@@ -97,28 +112,28 @@ class CheckBoxView: UIView {
     
     private func configureCheckBoxButton() {
         checkBoxButton.snp.makeConstraints {
-            $0.leading.equalToSuperview()
-            $0.height.width.equalTo(Constants.CheckBoxButton.height)
+            $0.top.bottom.leading.equalToSuperview()
         }
     }
     
     private func configureLabelButton() {
         labelButton.snp.makeConstraints {
-            $0.centerY.equalTo(checkBoxButton.snp.centerY)
+            $0.top.bottom.equalToSuperview()
             $0.leading.equalTo(checkBoxButton.snp.trailing).offset(Constants.LabelButton.leadingMargin)
         }
     }
     
     @objc private func buttonDidTapped(_ sender: UIButton) {
         let tag = sender.tag
-        
         switch tag {
         case 0:
             print("checkbox button tapped")
             checkBoxButton.isSelected = checkBoxButton.isSelected ? false : true
+            delegate?.validateButtonTags(self.tag)
         case 1:
             print("label Button Tapped")
             checkBoxButton.isSelected = checkBoxButton.isSelected ? false : true
+            delegate?.validateButtonTags(self.tag)
         default:
             break
         }

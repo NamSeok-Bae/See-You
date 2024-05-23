@@ -29,19 +29,19 @@ class TabBarVC: UITabBarController {
 
     private func setupViews() {
         let tabOne = UINavigationController(rootViewController: ViewController())
-        let tabOneBarItem = UITabBarItem(title: "홈", image: UIImage(systemName: "house"), tag: 0)
+        let tabOneBarItem = UITabBarItem(title: SYText.home, image: UIImage(systemName: "house"), tag: 0)
         tabOne.tabBarItem = tabOneBarItem
         
         let tabTwo = UINavigationController(rootViewController: SecondVC())
-        let tabTwoBarItem = UITabBarItem(title: "탐색", image: UIImage(systemName: "house"), tag: 1)
+        let tabTwoBarItem = UITabBarItem(title: SYText.search, image: UIImage(systemName: "house"), tag: 1)
         tabTwo.tabBarItem = tabTwoBarItem
         
         let tabThree = UINavigationController(rootViewController: ThirdVC())
-        let tabThreeBarItem = UITabBarItem(title: "쪽지함", image: UIImage(systemName: "house"), tag: 2)
+        let tabThreeBarItem = UITabBarItem(title: SYText.message_box, image: UIImage(systemName: "house"), tag: 2)
         tabThree.tabBarItem = tabThreeBarItem
         
-        let tabFour = UINavigationController(rootViewController: LoginVC())
-        let tabFourBarItem = UITabBarItem(title: "로그인", image: UIImage(systemName: "house"), tag: 3)
+        let tabFour = UINavigationController(rootViewController: FourthVC())
+        let tabFourBarItem = UITabBarItem(title: SYText.login, image: UIImage(systemName: "house"), tag: 3)
         tabFour.tabBarItem = tabFourBarItem
         
         self.viewControllers = [tabOne, tabTwo, tabThree, tabFour]

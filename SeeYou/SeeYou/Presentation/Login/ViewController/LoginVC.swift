@@ -10,13 +10,17 @@ import SnapKit
 import RxSwift
 import RxCocoa
 
-class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
+protocol LoginVCDelegate: AnyObject {
+    func touchUpMultiplyButton()
+}
+
+class LoginVC: UIViewController {
     // MARK: - UI properties
     private lazy var multiplyButton = UIBarButtonItem(
         image: .multiply,
         style: .plain,
         target: self,
-        action: #selector(buttonDidTapped(_:))
+        action: #selector(touchUpMultiplyButton)
     )
     
     private let logoImageView: UIImageView = {
@@ -39,7 +43,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     private lazy var emailTextField: UITextField = {
         let textField = UITextField()
         textField.attributedPlaceholder = NSAttributedString(
-            string: SYText.email_placeholder,
+            string: SYText.email_use_placeholder,
             attributes: [.foregroundColor : UIColor.Palette.gray500])
         textField.font = UIFont.systemFont(ofSize: 16)
         textField.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
@@ -158,6 +162,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     
     // MARK: - Properties
     var disposeBag = DisposeBag()
+    weak var delegate: LoginVCDelegate?
     
     // MARK: - Lifecycles
     override func viewDidLoad() {
@@ -165,6 +170,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
 
         setupViews()
         setupNavigationBar()
+        setupNotificationCenter()
         configureUI()
         bind()
     }
@@ -172,10 +178,6 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupNavigationBar()
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
     }
     
     // MARK: - Helpers
@@ -199,12 +201,14 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
             }).disposed(by: disposeBag)
     }
     
+    @objc private func touchUpMultiplyButton() {
+        self.delegate?.touchUpMultiplyButton()
+    }
+    
     @objc private func buttonDidTapped(_ sender: UIButton) {
         let tag = sender.tag
         
         switch tag {
-        case 0:
-            self.tabBarController?.selectedIndex = 0
         case 1:
             guard let emailText = emailTextField.text,
                   let passwordText = passwordTextField.text else { return }
@@ -245,6 +249,14 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
         let isValid = predicate.evaluate(with: input)
         
         return isValid
+    }
+}
+
+// MARK: - UITextField Delegate
+extension LoginVC: UITextFieldDelegate {
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        textField.tintColor = .Palette.primary500
+        return true
     }
 }
 
@@ -311,6 +323,14 @@ extension LoginVC {
         navigationItem.rightBarButtonItem = multiplyButton
         navigationController?.navigationBar.tintColor = .black
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
+    }
+    
+    private func setupNotificationCenter() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(touchUpMultiplyButton),
+            name: NSNotification.Name("MultiplyButton"),
+            object: nil)
     }
     
     private func configureUI() {
@@ -406,10 +426,3 @@ extension LoginVC {
     }
 }
 
-// MARK: - UITextField Delegate
-extension LoginVC: UITextFieldDelegate {
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        textField.tintColor = .Palette.primary500
-        return true
-    }
-}

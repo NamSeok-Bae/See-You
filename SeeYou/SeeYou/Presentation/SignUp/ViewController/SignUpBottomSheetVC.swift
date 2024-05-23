@@ -8,6 +8,10 @@
 import UIKit
 import SnapKit
 
+protocol SignUpBottomSheetVCDelegate: AnyObject {
+    func touchUpContinueButton()
+}
+
 class SignUpBottomSheetVC: UIViewController {
     // MARK: - UI properties
     private let dimmedView: UIView = {
@@ -61,18 +65,29 @@ class SignUpBottomSheetVC: UIViewController {
     
     private lazy var continueButton: UIButton = {
         let button = UIButton()
-        button.backgroundColor = .Palette.primary500
+        button.setBackgroundColor(.Palette.primary500, for: .normal)
+        button.setBackgroundColor(.Palette.primary500.withAlphaComponent(0.4), for: .disabled)
         button.clipsToBounds = true
         button.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
         button.setTitle(SYText.agree_and_continue, for: .normal)
         button.setTitleColor(.Palette.gray0, for: .normal)
         button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
+        button.isEnabled = false
         button.tag = 1
         
         return button
     }()
     
+    private let checkBoxViews: [CheckBoxView] = [
+        CheckBoxView(text: SYText.terms_of_age, underLine: false),
+        CheckBoxView(text: SYText.terms_of_service, underLine: true),
+        CheckBoxView(text: SYText.terms_of_information, underLine: true),
+        CheckBoxView(text: SYText.terms_of_marketing, underLine: true)
+    ]
+    
     // MARK: - Properties
+    private var checkBoxTagArray = Array(repeating: false, count: 5)
+    weak var delegate: SignUpBottomSheetVCDelegate?
     
     // MARK: - Lifecycles
     override func viewDidLoad() {
@@ -91,7 +106,9 @@ class SignUpBottomSheetVC: UIViewController {
         case 0:
             self.dismiss(animated: true)
         case 1:
-            print("continue button tapped")
+            self.dismiss(animated: false) {
+                self.delegate?.touchUpContinueButton()
+            }
         default:
             break
         }
@@ -112,6 +129,7 @@ extension SignUpBottomSheetVC {
         enum LeftBarItem {
             static let topMarign: CGFloat = .toScaledHeight(value: 32)
             static let leadingMargin: CGFloat = .toScaledWidth(value: 20)
+            static let height: CGFloat = .toScaledHeight(value: 26)
         }
         
         enum RightBarItem {
@@ -153,12 +171,17 @@ extension SignUpBottomSheetVC {
             bottomSheetView.addSubview($0)
         }
         
-        [
-            CheckBoxView(text: SYText.terms_of_age, underLine: false),
-            CheckBoxView(text: SYText.terms_of_service, underLine: true),
-            CheckBoxView(text: SYText.terms_of_information, underLine: true),
-            CheckBoxView(text: SYText.terms_of_marketing, underLine: true)
-        ].forEach {
+        setupCheckBoxView()
+    }
+    
+    private func setupCheckBoxView() {
+        var tag = 1
+        checkBoxViews.map {
+            $0.tag = tag
+            tag += 1
+            $0.delegate = self
+            return $0
+        }.forEach {
             stackView.addArrangedSubview($0)
         }
     }
@@ -195,6 +218,7 @@ extension SignUpBottomSheetVC {
         leftBarItem.snp.makeConstraints {
             $0.top.equalToSuperview().offset(Constants.LeftBarItem.topMarign)
             $0.leading.equalToSuperview().offset(Constants.LeftBarItem.leadingMargin)
+            $0.height.equalTo(Constants.LeftBarItem.height)
         }
     }
     
@@ -223,5 +247,24 @@ extension SignUpBottomSheetVC {
             $0.top.equalTo(stackView.snp.bottom).offset(Constants.ContinueButton.topMargin)
             $0.bottom.equalToSuperview().offset(Constants.ContinueButton.bottomMargin)
         }
+    }
+}
+
+extension SignUpBottomSheetVC: CheckBoxViewDelegate {
+    private func presentTermOfUsePage(_ tag: Int) {
+        print("\(tag)에 관한 이용 약관 동의 창 열기")
+    }
+    
+    func validateButtonTags(_ tag: Int) {
+        checkBoxTagArray[tag] = !checkBoxTagArray[tag]
+        if tag != 1 && checkBoxTagArray[tag] { presentTermOfUsePage(tag) }
+        
+        for i in 1...3 {
+            if checkBoxTagArray[i] == false {
+                continueButton.isEnabled = false
+                return
+            }
+        }
+        continueButton.isEnabled = true
     }
 }
