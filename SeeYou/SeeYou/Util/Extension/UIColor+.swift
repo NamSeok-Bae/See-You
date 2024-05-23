@@ -18,6 +18,10 @@ extension UIColor {
         /// #F34902
         static let primary500 = UIColor(hexString: "F34902")
         
+        /// Primary-200
+        /// #FFE2D7
+        static let primary200 = UIColor(hexString: "FFE2D7")
+        
         /// Primary-100
         /// #FFF8F5
         static let primary100 = UIColor(hexString: "FFF8F5")
@@ -39,6 +43,10 @@ extension UIColor {
         /// Gray-500
         /// #9E9E9E
         static let gray500 = UIColor(hexString: "9E9E9E")
+        
+        /// Gray-400
+        /// #BDBDBD
+        static let gray400 = UIColor(hexString: "BDBDBD")
         
         /// Gray-200
         /// #EEEEEE
