@@ -14,4 +14,5 @@ extension UIImage {
     static let signup_customer = UIImage(named: "signup_customer")
     static let signup_guide = UIImage(named: "signup_guide")
     static let right_arrow = UIImage(named: "right_arrow")
+    static let Tip = UIImage(named: "Tip")
 }

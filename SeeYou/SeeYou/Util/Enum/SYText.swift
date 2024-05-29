@@ -16,6 +16,8 @@ enum SYText {
     // MARK: - 로그인 화면
     static let email = "邮箱"
     static let email_use_placeholder = "请输入您的邮箱地址"
+    
+    /// 이메일 주소를 확인해주세요
     static let email_validate_error = "* 请再次确认一下邮箱地址。"
     
     static let password = "密码"
@@ -68,6 +70,7 @@ enum SYText {
     
     /// 본인 확인을 위해\n이메일을 인증해주세요
     static let email_confirm_title = "请认证邮箱地址\n确认个人信息"
+    
     /// 사용하실 이메일을 입력해주세요
     static let email_signup_placeholder = "请输入您的邮箱地址"
     
@@ -76,4 +79,16 @@ enum SYText {
     
     /// 인증번호를 입력해주세요
     static let email_confirm_number_placeholder = "请输入验证码"
+    
+    /// * 입력시간을 초과하였습니다. 임시코드를 다시 보내주세요
+    static let email_confirm_validate_error = "* 已超过输入时间，请点击再次发送验证码。"
+    
+    /// 재전송
+    static let resend = "再次发送"
+    
+    // MARK: -  Warning 화면
+    
+    static let warning_title = "임시코드가 오지 않나요?"
+    
+    static let warning_description = "스팸 메일함을 확인해주시거나 메일 주소를 한 번 더 확인해주세요."
 }
