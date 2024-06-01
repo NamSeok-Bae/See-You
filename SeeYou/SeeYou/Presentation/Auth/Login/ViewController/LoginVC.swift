@@ -163,8 +163,18 @@ class LoginVC: UIViewController {
     // MARK: - Properties
     var disposeBag = DisposeBag()
     weak var delegate: LoginVCDelegate?
+    private let viewModel: LoginVM
     
     // MARK: - Lifecycles
+    init(viewModel: LoginVM) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
