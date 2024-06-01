@@ -20,7 +20,7 @@ class LoginVC: UIViewController {
         image: .multiply,
         style: .plain,
         target: self,
-        action: #selector(touchUpMultiplyButton)
+        action: nil
     )
     
     private let logoImageView: UIImageView = {
@@ -123,8 +123,6 @@ class LoginVC: UIViewController {
         button.layer.borderWidth = 1
         button.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
         button.layer.borderColor = UIColor.clear.cgColor
-        button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
-        button.tag = 1
         
         return button
     }()
@@ -137,8 +135,6 @@ class LoginVC: UIViewController {
         button.layer.borderWidth = 1
         button.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
         button.layer.backgroundColor = UIColor.Palette.gray0.cgColor
-        button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
-        button.tag = 2
         
         return button
     }()
@@ -154,8 +150,6 @@ class LoginVC: UIViewController {
             value: NSUnderlineStyle.single.rawValue,
             range: NSRange(location: 0, length: text.count))
         button.setAttributedTitle(attributedString, for: .normal)
-        button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
-        button.tag = 3
         
         return button
     }()
@@ -180,7 +174,6 @@ class LoginVC: UIViewController {
 
         setupViews()
         setupNavigationBar()
-        setupNotificationCenter()
         configureUI()
         bind()
     }
@@ -197,6 +190,36 @@ class LoginVC: UIViewController {
     }
     
     private func bind() {
+        let input = LoginVM.Input(
+            multiplyButtonDidTapped: multiplyButton.rx.tap.asObservable(),
+            loginButtonDidTapped: loginButton.rx.tap.map {
+                (self.emailTextField.text ?? "", self.passwordTextField.text ?? "")
+            }.asObservable(),
+            signUpButtonDidTapped: signUpButton.rx.tap.asObservable(),
+            passwordResetButtonDidTapped: passwordResetButton.rx.tap.asObservable()
+        )
+        
+        let output = viewModel.transform(input: input)
+        
+        output.isValidateLogin
+            .subscribe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] isValidateLogin in
+                guard let self else { return }
+                
+                if isValidateLogin {
+                    emailTextField.layer.borderColor = UIColor.Palette.gray200.cgColor
+                    passwordTextField.layer.borderColor = UIColor.Palette.gray200.cgColor
+                    emailErrorLabel.isHidden = true
+                    passwordErrorLabel.isHidden = true
+                } else {
+                    emailTextField.layer.borderColor = UIColor.Palette.red500.cgColor
+                    passwordTextField.layer.borderColor = UIColor.Palette.red500.cgColor
+                    emailErrorLabel.isHidden = false
+                    passwordErrorLabel.isHidden = false
+                }
+            })
+            .disposed(by: disposeBag)
+        
         Observable.combineLatest(
             emailTextField.rx.text.orEmpty.skip(1).distinctUntilChanged(),
             passwordTextField.rx.text.orEmpty.skip(1).distinctUntilChanged(),
@@ -209,56 +232,6 @@ class LoginVC: UIViewController {
                     self.loginButton.isEnabled = false
                 }
             }).disposed(by: disposeBag)
-    }
-    
-    @objc private func touchUpMultiplyButton() {
-        self.delegate?.touchUpMultiplyButton()
-    }
-    
-    @objc private func buttonDidTapped(_ sender: UIButton) {
-        let tag = sender.tag
-        
-        switch tag {
-        case 1:
-            guard let emailText = emailTextField.text,
-                  let passwordText = passwordTextField.text else { return }
-            if validateEmail(emailText) && validatePassword(passwordText) {
-                print("확인됨")
-                emailTextField.layer.borderColor = UIColor.Palette.gray200.cgColor
-                passwordTextField.layer.borderColor = UIColor.Palette.gray200.cgColor
-                emailErrorLabel.isHidden = true
-                passwordErrorLabel.isHidden = true
-            } else {
-                emailTextField.layer.borderColor = UIColor.Palette.red500.cgColor
-                passwordTextField.layer.borderColor = UIColor.Palette.red500.cgColor
-                emailErrorLabel.isHidden = false
-                passwordErrorLabel.isHidden = false
-            }
-        case 2:
-            self.navigationController?.pushViewController(
-                SignUpVC(),
-                animated: true)
-        case 3:
-            print("touch password reset btn")
-        default:
-            print("버튼에 대한 태그를 다시 확인해주세요.")
-        }
-    }
-    
-    private func validateEmail(_ input: String) -> Bool {
-        let regex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", regex)
-        let isValid = emailPredicate.evaluate(with: input)
-
-        return isValid
-    }
-    
-    private func validatePassword(_ input: String) -> Bool {
-        let regex = "^(?=.*[A-Za-z])(?=.*[0-9]).{8,30}"
-        let predicate = NSPredicate(format: "SELF MATCHES %@", regex)
-        let isValid = predicate.evaluate(with: input)
-        
-        return isValid
     }
 }
 
@@ -333,14 +306,6 @@ extension LoginVC {
         navigationItem.rightBarButtonItem = multiplyButton
         navigationController?.navigationBar.tintColor = .black
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
-    }
-    
-    private func setupNotificationCenter() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(touchUpMultiplyButton),
-            name: NSNotification.Name("MultiplyButton"),
-            object: nil)
     }
     
     private func configureUI() {

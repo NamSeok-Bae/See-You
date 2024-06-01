@@ -6,3 +6,15 @@
 //
 
 import Foundation
+import RxSwift
+
+protocol MyInfoUseCase {
+}
+
+final class DefaultMyInfoUseCase: MyInfoUseCase {
+    // MARK: - Properties
+    
+    // MARK: - Lifecycles
+    
+    // MARK: - Helpers
+}

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 protocol Requestable {
     typealias SessionError = SessionProvider.SessionError
@@ -55,5 +56,21 @@ private extension Requestable {
             return nil
         }
         return querys.map { URLQueryItem(name: $0.key, value: "\($0.value)") }
+    }
+}
+
+extension Encodable {
+    var toDictionary: [String: Any]? {
+        do {
+            let jsonData = try JSONEncoder().encode(self)
+            return try JSONSerialization
+                .jsonObject(
+                    with: jsonData,
+                    options: []
+                ) as? [String: Any]
+        } catch {
+            os_log("Failed to convert encodable json data as [String: Any]", type: .error)
+            return nil
+        }
     }
 }

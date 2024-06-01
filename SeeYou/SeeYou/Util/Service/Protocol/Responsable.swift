@@ -12,54 +12,30 @@ protocol Responsable {
 }
 
 enum ResponseType {
-    case carRecommendation
-    case carRecommendationCustom
-    case carSpec
-    case carSpecTrims
-    case carSpecActivityLog(tirmID: Int)
-    case exteriorColor
-    case interiorColor
-    case trimColor
-    case carSpecAdditionalOption(carSpecId: Int)
-    case carSpecBasicOptions(carSpecId: Int)
-    case optionCarSpecIdTagsTagId(carSpecID: Int, tagID: Int)
-    case pdfID
-    case pdfCarInfomation(pdfID: String)
-    case pdfEmail(pdfEmail: PdfEmail)
-    case pdfURL(pdfID: String)
+    case emailSend
+    case emailResend
+    case emailValify
+    case checkNickname
+    case signUpTourist
+    case signUpDipei
+    case login
     
     var path: String {
         switch self {
-        case .carRecommendation:
-            return "car-recommendation"
-        case .carRecommendationCustom:
-            return "car-recommendation/custom"
-        case .carSpec:
-            return "car-spec"
-        case .carSpecTrims:
-            return "car-spec/trims"
-        case .carSpecActivityLog(let trimID):
-            return "car-spec/activity-log/\(trimID)"
-        case .exteriorColor:
-            return "color/exterior-colors"
-        case .interiorColor:
-            return "color/interior-colors"
-        case .trimColor:
-            return "color/trim-colors"
-        case .carSpecAdditionalOption(let carSpecID):
-            return "car-spec/\(carSpecID)/additional-options"
-        case .carSpecBasicOptions(let carSpecID):
-            return "car-spec/\(carSpecID)/basic-options"
-        case .optionCarSpecIdTagsTagId(let carSpecID, let tagID):
-            return "options/\(carSpecID)/tags/\(tagID)"
-        case .pdfID:
-            return "pdfId"
-        case .pdfCarInfomation(let pdfID):
-            return "pdf/\(pdfID)/car-information"
-        case .pdfEmail(let pdfEmail):
-            return "pdf/\(pdfEmail.pdfID)/email/\(pdfEmail.emailName)"
-        case .pdfURL(let pdfID):
-            return "pdf/\(pdfID)"
+        case .emailSend:
+            return "auth/send-code"
+        case .emailResend:
+            return "auth/resend-code"
+        case .emailValify:
+            return "auth/verify-code"
+        case .checkNickname:
+            return "auth/check-nickname"
+        case .signUpTourist:
+            return "auth/tourist"
+        case .signUpDipei:
+            return "auth/dipei"
+        case .login:
+            return "auth/login"
         }
     }
 }

@@ -6,24 +6,51 @@
 //
 
 import UIKit
+import RxSwift
+import RxRelay
+import RxCocoa
 
-class MyInfoViewController: UIViewController {
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+final class MyInfoVC: UIViewController, HorizontallyFadeAnimatorDelegate, LoginVCDelegate {
+    func touchUpMultiplyButton() {
+        self.tabBarController?.selectedIndex = 0
+        self.dismiss(animated: false)
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    // MARK: - UI properties
+    
+    // MARK: - Properties
+    private var disposeBag = DisposeBag()
+    private let viewModel: MyInfoVM
+    
+    // MARK: - Lifecycles
+    init(viewModel: MyInfoVM) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
     }
-    */
-
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        self.view.backgroundColor = .white
+        bind()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+    }
+    
+    // MARK: - Helpers
+    private func bind() {
+        let input = MyInfoVM.Input()
+        
+        let output = viewModel.transform(input: input)
+    }
 }

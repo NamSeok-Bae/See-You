@@ -7,6 +7,10 @@
 
 import Foundation
 
-final class DefaultLoginUseCase {
+protocol LoginUseCase {
+    
+}
+
+final class DefaultLoginUseCase: LoginUseCase {
     
 }

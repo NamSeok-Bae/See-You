@@ -20,8 +20,8 @@ final class Endpoint<ResponseModel>: NetworkInteractionable where ResponseModel:
     var headers: [String: String]?
     
     init(
-        scheme: String = "https",
-        host: String = "api.make-my-car.shop",
+        scheme: String = "http",
+        host: String = "43.203.118.104:9001",
         method: HTTPMethod = .get,
         prefixPath: String = "/api/v1/",
         responseType: ResponseType,

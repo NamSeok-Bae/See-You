@@ -10,8 +10,9 @@ import Foundation
 enum SYText {
     // MARK: - 탭 바
     static let home = "홈"
-    static let search = "탐색"
-    static let message_box = "쪽지함"
+    static let matching = "나의 매칭"
+    static let message = "쪽지함"
+    static let my = "my"
     
     // MARK: - 로그인 화면
     static let email = "邮箱"
