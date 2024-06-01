@@ -40,11 +40,18 @@ final class DefaultLoginCooridnator: Coordinator {
         vm.signUpButtonDidTapped
             .subscribe(onNext: { [weak self] in
                 guard let self else { return }
-                let vc = SignUpVC()
-                self.navigationController.pushViewController(vc, animated: true)
+                showSignUpViewController()
             })
             .disposed(by: disposeBag)
         
         navigationController.viewControllers = [vc]
+    }
+    
+    private func showSignUpViewController() {
+        let useCase = DefaultSignUpUseCase()
+        let vm = SignUpVM(useCase: useCase)
+        let vc = SignUpVC(viewModel: vm)
+        
+        self.navigationController.pushViewController(vc, animated: true)
     }
 }
