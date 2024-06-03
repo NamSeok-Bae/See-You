@@ -133,7 +133,6 @@ class CheckBoxView: UIView {
             delegate?.validateButtonTags(self.tag)
         case 1:
             print("label Button Tapped")
-            checkBoxButton.isSelected = checkBoxButton.isSelected ? false : true
             delegate?.touchUpLabelButton(self.tag)
         default:
             break

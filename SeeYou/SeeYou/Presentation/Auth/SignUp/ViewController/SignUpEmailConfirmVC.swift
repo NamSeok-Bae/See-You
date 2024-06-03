@@ -15,7 +15,7 @@ class SignUpEmailConfirmVC: UIViewController {
         image: .multiply,
         style: .plain,
         target: self,
-        action: #selector(buttonDidTapped(_:))
+        action: nil
     )
     
     private let titleLabel: UILabel = {
@@ -115,7 +115,7 @@ class SignUpEmailConfirmVC: UIViewController {
         return label
     }()
     
-    private lazy var bottomButton: UIButton = {
+    private lazy var temporaryCodeButton: UIButton = {
         let button = UIButton()
         button.setBackgroundColor(.Palette.primary500, for: .normal)
         button.setBackgroundColor(.Palette.primary500.withAlphaComponent(0.4), for: .disabled)
@@ -123,9 +123,21 @@ class SignUpEmailConfirmVC: UIViewController {
         button.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
         button.setTitle(SYText.temporary_code_send, for: .normal)
         button.setTitleColor(.Palette.gray0, for: .normal)
-        button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
         button.isEnabled = false
-        button.tag = 1
+        
+        return button
+    }()
+    
+    private lazy var confirmButton: UIButton = {
+        let button = UIButton()
+        button.setBackgroundColor(.Palette.primary500, for: .normal)
+        button.setBackgroundColor(.Palette.primary500.withAlphaComponent(0.4), for: .disabled)
+        button.clipsToBounds = true
+        button.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
+        button.setTitle(SYText.temporary_code_send, for: .normal)
+        button.setTitleColor(.Palette.gray0, for: .normal)
+        button.isEnabled = false
+        button.isHidden = true
         
         return button
     }()
@@ -135,7 +147,6 @@ class SignUpEmailConfirmVC: UIViewController {
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
         button.setTitle(SYText.resend, for: .normal)
         button.setTitleColor(.Palette.primary500, for: .normal)
-        button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
         button.tag = 2
         
         return button
@@ -153,11 +164,21 @@ class SignUpEmailConfirmVC: UIViewController {
     private let warningView = WarningView()
     
     // MARK: - Properties
-    var disposeBag = DisposeBag()
-    private let timer = DefaultBackgroundTimer()
+    private let disposeBag = DisposeBag()
+    private var timer = Timer()
     private var time = 0
+    private let viewModel: SignUpEmailConfirmVM
     
     // MARK: - Lifecycles
+    init(viewModel: SignUpEmailConfirmVM) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -174,80 +195,91 @@ class SignUpEmailConfirmVC: UIViewController {
     }
     
     private func bind() {
+        let input = SignUpEmailConfirmVM.Input(
+            multiplyButtonDidTapped: multiplyButton.rx.tap.asObservable(),
+            temporaryCodeButtonDidTapped: 
+                temporaryCodeButton.rx.tap.map {
+                    _ in self.emailTextField.text ?? ""
+                }.asObservable(),
+            confirmButtonDidTapped:
+                confirmButton.rx.tap.map {
+                    _ in self.confirmTextField.text ?? ""
+                }.asObservable()
+        )
+        
+        let output = viewModel.transform(input: input)
+        
+        output.isValidateTemporaryCode
+            .subscribe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] isValidate in
+                guard let self else { return }
+                if isValidate {
+                    emailErrorLabel.isHidden = true
+                    emailTextField.layer.borderColor = UIColor.Palette.gray200.cgColor
+                    emailTextField.isEnabled = false
+                    temporaryCodeButton.isHidden = true
+                    resendButton.isEnabled = false
+                    setupConfirmViews()
+                    configureConfirmLabel()
+                    configureConfirmTextField()
+                    configureConfirmErrorLabel()
+                    configureConfirmButton()
+                    configureResendButton()
+                    configureTimerLabel()
+                    setTimer(startTime: Date())
+                } else {
+                    emailErrorLabel.isHidden = false
+                    emailTextField.layer.borderColor = UIColor.Palette.red500.cgColor
+                }
+            })
+            .disposed(by: disposeBag)
+        
         emailTextField.rx.text.orEmpty
             .skip(1)
             .distinctUntilChanged()
             .subscribe(onNext: { string in
-                self.bottomButton.isEnabled = string.count > 0 ? true : false
-            }).disposed(by: disposeBag)
+                self.temporaryCodeButton.isEnabled = string.count > 0 ? true : false
+            })
+            .disposed(by: disposeBag)
         
         confirmTextField.rx.text.orEmpty
             .skip(1)
             .distinctUntilChanged()
             .subscribe(onNext: { string in
-                self.bottomButton.isEnabled = string.count > 0 ? true : false
-            }).disposed(by: disposeBag)
-    }
-    
-    @objc private func buttonDidTapped(_ sender: UIButton) {
-        let tag = sender.tag
+                self.confirmButton.isEnabled = string.count > 0 ? true : false
+            })
+            .disposed(by: disposeBag)
         
-        switch tag {
-        case 0:
-            NotificationCenter.default.post(name: NSNotification.Name("MultiplyButton"), object: nil)
-        case 1:
-            if validateEmail(emailTextField.text ?? "") {
-                emailErrorLabel.isHidden = true
-                emailTextField.layer.borderColor = UIColor.Palette.gray200.cgColor
-                emailTextField.isEnabled = false
-                setupConfirmViews()
-                configureConfirmLabel()
-                configureConfirmTextField()
-                configureConfirmErrorLabel()
-                configureBottomButtonByConfirm()
-                configureResendButton()
-                configureTimerLabel()
-                startRepeatTimer()
-                bottomButton.tag = 3
-                bottomButton.isEnabled = false
-            } else {
-                emailErrorLabel.isHidden = false
-                emailTextField.layer.borderColor = UIColor.Palette.red500.cgColor
-            }
-        case 2:
-            confirmTextField.layer.borderColor = UIColor.Palette.gray200.cgColor
-            confirmErrorLabel.isHidden = true
-            startRepeatTimer()
-        case 3:
-            print("인증하기 버튼 탭드")
-        default:
-            break
-        }
-    }
-    
-    private func validateEmail(_ input: String) -> Bool {
-        let regex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", regex)
-        let isValid = emailPredicate.evaluate(with: input)
-
-        return isValid
-    }
-    
-    private func startRepeatTimer() {
-        timer.start(durationSeconds: 10) {
-            DispatchQueue.main.async {
-                self.time += 1
-                let realTime = 10 - self.time
-                self.timerLabel.text = String(format: "%02d:%02d", realTime / 60, realTime % 60)
-            }
-        } completion: {
-            DispatchQueue.main.async { [weak self] in
+        resendButton.rx.tap
+            .subscribe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] in
                 guard let self else { return }
-                self.timerLabel.text = "00:00"
-                self.confirmTextField.layer.borderColor = UIColor.Palette.primary500.cgColor
-                self.confirmErrorLabel.isHidden = false
-                self.time = 0
-                self.timer.cancel()
+                confirmTextField.layer.borderColor = UIColor.Palette.gray200.cgColor
+                confirmErrorLabel.isHidden = true
+                resendButton.isEnabled = false
+                setTimer(startTime: Date())
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    private func setTimer(startTime: Date) {
+        self.timerLabel.text = String(format: "%02d:%02d", 10 / 60, 10 % 60)
+        DispatchQueue.main.async { [weak self] in
+            self?.timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timer in
+                let elapsedTimeSeconds = Int(Date().timeIntervalSince(startTime))
+                let expireLimit = 10
+
+                guard elapsedTimeSeconds <= expireLimit else {
+                    timer.invalidate()
+                    self?.timerLabel.text = "00:00"
+                    self?.confirmTextField.layer.borderColor = UIColor.Palette.primary500.cgColor
+                    self?.confirmErrorLabel.isHidden = false
+                    self?.resendButton.isEnabled = true
+                    return
+                }
+
+                let remainSeconds = expireLimit - elapsedTimeSeconds
+                self?.timerLabel.text = String(format: "%02d:%02d", remainSeconds / 60, remainSeconds % 60)
             }
         }
     }
@@ -303,7 +335,14 @@ extension SignUpEmailConfirmVC {
             static let leadingMargin: CGFloat = .toScaledWidth(value: 20)
         }
         
-        enum BottomButton {
+        enum TemporaryCodeButton {
+            static let topMargin: CGFloat = .toScaledHeight(value: 32)
+            static let leadingMargin: CGFloat = .toScaledWidth(value: 20)
+            static let trailingMargin: CGFloat = .toScaledWidth(value: -20)
+            static let height: CGFloat = .toScaledHeight(value: 48)
+        }
+        
+        enum ConfirmButton {
             static let topMargin: CGFloat = .toScaledHeight(value: 32)
             static let leadingMargin: CGFloat = .toScaledWidth(value: 20)
             static let trailingMargin: CGFloat = .toScaledWidth(value: -20)
@@ -333,7 +372,7 @@ extension SignUpEmailConfirmVC {
             emailLabel,
             emailTextField,
             emailErrorLabel,
-            bottomButton,
+            temporaryCodeButton,
             warningView
         ].forEach {
             view.addSubview($0)
@@ -344,7 +383,8 @@ extension SignUpEmailConfirmVC {
         [
             confirmLabel,
             confirmTextField,
-            confirmErrorLabel
+            confirmErrorLabel,
+            confirmButton
         ].forEach {
             view.addSubview($0)
         }
@@ -366,7 +406,7 @@ extension SignUpEmailConfirmVC {
         configureEmailLabel()
         configureEmailTextField()
         configureEmailErrorLabel()
-        configureBottomButton()
+        configureTemporaryCodeButton()
         configureWarningView()
     }
     
@@ -423,21 +463,23 @@ extension SignUpEmailConfirmVC {
         }
     }
     
-    private func configureBottomButton() {
-        bottomButton.snp.makeConstraints {
-            $0.top.equalTo(emailTextField.snp.bottom).offset(Constants.BottomButton.topMargin)
-            $0.leading.equalToSuperview().offset(Constants.BottomButton.leadingMargin)
-            $0.trailingMargin.equalToSuperview().offset(Constants.BottomButton.trailingMargin)
-            $0.height.equalTo(Constants.BottomButton.height)
+    private func configureTemporaryCodeButton() {
+        temporaryCodeButton.snp.makeConstraints {
+            $0.top.equalTo(emailTextField.snp.bottom).offset(Constants.TemporaryCodeButton.topMargin)
+            $0.leading.equalToSuperview().offset(Constants.TemporaryCodeButton.leadingMargin)
+            $0.trailingMargin.equalToSuperview().offset(Constants.TemporaryCodeButton.trailingMargin)
+            $0.height.equalTo(Constants.TemporaryCodeButton.height)
         }
     }
     
-    private func configureBottomButtonByConfirm() {
-        bottomButton.snp.remakeConstraints {
-            $0.top.equalTo(confirmTextField.snp.bottom).offset(Constants.BottomButton.topMargin)
-            $0.leading.equalToSuperview().offset(Constants.BottomButton.leadingMargin)
-            $0.trailingMargin.equalToSuperview().offset(Constants.BottomButton.trailingMargin)
-            $0.height.equalTo(Constants.BottomButton.height)
+    private func configureConfirmButton() {
+        confirmButton.isHidden = false
+        
+        confirmButton.snp.makeConstraints {
+            $0.top.equalTo(confirmTextField.snp.bottom).offset(Constants.ConfirmButton.topMargin)
+            $0.leading.equalToSuperview().offset(Constants.ConfirmButton.leadingMargin)
+            $0.trailingMargin.equalToSuperview().offset(Constants.ConfirmButton.trailingMargin)
+            $0.height.equalTo(Constants.ConfirmButton.height)
         }
     }
     

@@ -7,10 +7,8 @@
 
 import UIKit
 import SnapKit
-
-protocol SignUpBottomSheetVCDelegate: AnyObject {
-    func touchUpContinueButton()
-}
+import RxSwift
+import RxGesture
 
 class SignUpBottomSheetVC: UIViewController {
     // MARK: - UI properties
@@ -49,7 +47,6 @@ class SignUpBottomSheetVC: UIViewController {
         button.setImage(image, for: .normal)
         button.tintColor = .Palette.gray1000
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
         
         return button
     }()
@@ -71,9 +68,7 @@ class SignUpBottomSheetVC: UIViewController {
         button.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
         button.setTitle(SYText.agree_and_continue, for: .normal)
         button.setTitleColor(.Palette.gray0, for: .normal)
-        button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
         button.isEnabled = false
-        button.tag = 1
         
         return button
     }()
@@ -87,35 +82,56 @@ class SignUpBottomSheetVC: UIViewController {
     
     // MARK: - Properties
     private var checkBoxTagArray = Array(repeating: false, count: 5)
-    weak var delegate: SignUpBottomSheetVCDelegate?
+    private let viewModel: SignUpBottomSheetVM
+    private let disposeBag = DisposeBag()
     
     // MARK: - Lifecycles
+    init(viewModel: SignUpBottomSheetVM) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        bind()
         setupViews()
-        setTapGesture()
         configureUI()
     }
     
     // MARK: - Helpers
-    @objc private func buttonDidTapped(_ sender: UIButton) {
-        let tag = sender.tag
+    private func bind() {
+        let input = SignUpBottomSheetVM.Input(
+            continueButtonDidTapped: continueButton.rx.tap.asObservable()
+        )
         
-        switch tag {
-        case 0:
-            self.dismiss(animated: true)
-        case 1:
-            self.dismiss(animated: false) {
-                self.delegate?.touchUpContinueButton()
-            }
-        default:
-            break
-        }
-    }
-    
-    @objc private func viewDidTapped(_ sender: AnyObject) {
-        self.dismiss(animated: true)
+        let output = viewModel.transform(input: input)
+        
+        dimmedView
+            .rx
+            .tapGesture()
+            .when(.recognized)
+            .map { _ in }
+            .subscribe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] in
+                guard let self else { return }
+                self.dismiss(animated: true)
+            })
+            .disposed(by: disposeBag)
+        
+        rightBarItem
+            .rx
+            .tap
+            .subscribe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] in
+                guard let self else { return }
+                self.dismiss(animated: true)
+            })
+            .disposed(by: disposeBag)
     }
 }
 
@@ -184,12 +200,6 @@ extension SignUpBottomSheetVC {
         }.forEach {
             stackView.addArrangedSubview($0)
         }
-    }
-    
-    private func setTapGesture() {
-        let tapGesture = UITapGestureRecognizer()
-        tapGesture.addTarget(self, action: #selector(viewDidTapped(_:)))
-        dimmedView.addGestureRecognizer(tapGesture)
     }
     
     private func configureUI() {

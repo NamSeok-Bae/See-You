@@ -8,6 +8,8 @@
 import UIKit
 import SnapKit
 import RxSwift
+import RxCocoa
+import RxGesture
 
 class SignUpVC: UIViewController {
     // MARK: - UI properties
@@ -15,7 +17,7 @@ class SignUpVC: UIViewController {
         image: .multiply,
         style: .plain,
         target: self,
-        action: #selector(buttonDidTapped(_:))
+        action: nil
     )
     
     private let titleLabel: UILabel = {
@@ -50,14 +52,14 @@ class SignUpVC: UIViewController {
         return stackView
     }()
     
-    private let signup_customber_view = SignUpButtonView(
+    private let signUpCustomerView = SignUpButtonView(
         titleText: SYText.signup_customer_title,
         descriptionText: SYText.signup_customer_description,
         backgroundColor: .Palette.primary500,
         textColor: .Palette.gray0,
         image: .signup_customer)
     
-    private let signup_guide_view = SignUpButtonView(
+    private let signUpGuideView = SignUpButtonView(
         titleText: SYText.signup_guide_title,
         descriptionText: SYText.signup_guide_description,
         backgroundColor: .Palette.yellow,
@@ -81,44 +83,32 @@ class SignUpVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        bind()
         setupViews()
         setupNavigationBar()
         configureUI()
     }
     
     // MARK: - Helpers
-    @objc private func buttonDidTapped(_ sender: UIButton) {
-        NotificationCenter.default.post(name: NSNotification.Name("MultiplyButton"), object: nil)
-    }
-    
-    @objc private func viewDidTapped(_ sender: UITapGestureRecognizer) {
-        let tag = sender.view?.tag
+    private func bind() {
+        let input = SignUpVM.Input(
+            multiplyButtonDidTapped: multiplyButton.rx.tap.asObservable(),
+            signUpCustomerViewDidTapped: 
+                signUpCustomerView
+                    .rx
+                    .tapGesture()
+                    .when(.recognized)
+                    .map { _ in }.asObservable(),
+            signUpGuideViewDidTapped: 
+                signUpGuideView
+                    .rx
+                    .tapGesture()
+                    .when(.recognized)
+                    .map { _ in }.asObservable())
         
-        switch tag {
-        case 1:
-            print("Did Tapped sign_customer_view")
-            let vc = SignUpBottomSheetVC()
-            vc.delegate = self
-            vc.modalPresentationStyle = .overFullScreen
-            vc.modalTransitionStyle = .coverVertical
-            self.present(vc, animated: true)
-        case 2:
-            print("Did Tapped sign_guide_view")
-        default:
-            break
-        }
+        let output = viewModel.transform(input: input)
     }
 }
-
-// MARK: - SignUpBottomSheetVCDelegate
-extension SignUpVC: SignUpBottomSheetVCDelegate {
-    func touchUpContinueButton() {
-        self.navigationController?.pushViewController(
-            SignUpEmailConfirmVC(),
-            animated: true)
-    }
-}
-
 
 // MARK: - Setup & Configure Functions
 extension SignUpVC {
@@ -153,17 +143,11 @@ extension SignUpVC {
         ].forEach { self.view.addSubview($0) }
         
         [
-            signup_customber_view,
-            signup_guide_view
+            signUpCustomerView,
+            signUpGuideView
         ].forEach {
             stackView.addArrangedSubview($0)
         }
-    }
-    
-    private func setTapGesture(targetView: UIView) {
-        let tapGesture = UITapGestureRecognizer()
-        tapGesture.addTarget(self, action: #selector(viewDidTapped(_:)))
-        targetView.addGestureRecognizer(tapGesture)
     }
     
     private func setupNavigationBar() {
@@ -206,17 +190,13 @@ extension SignUpVC {
     }
     
     private func configureSignUpCustomerView() {
-        signup_customber_view.tag = 1
-        setTapGesture(targetView: signup_customber_view)
-        signup_customber_view.snp.makeConstraints {
+        signUpCustomerView.snp.makeConstraints {
             $0.height.equalTo(Constants.SignUpView.height)
         }
     }
     
     private func configureSignUpGuideView() {
-        signup_guide_view.tag = 2
-        setTapGesture(targetView: signup_guide_view)
-        signup_guide_view.snp.makeConstraints {
+        signUpGuideView.snp.makeConstraints {
             $0.height.equalTo(Constants.SignUpView.height)
         }
     }
