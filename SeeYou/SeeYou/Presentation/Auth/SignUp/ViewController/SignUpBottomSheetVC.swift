@@ -46,7 +46,6 @@ class SignUpBottomSheetVC: UIViewController {
         
         button.setImage(image, for: .normal)
         button.tintColor = .Palette.gray1000
-        button.translatesAutoresizingMaskIntoConstraints = false
         
         return button
     }()
@@ -73,11 +72,36 @@ class SignUpBottomSheetVC: UIViewController {
         return button
     }()
     
-    private let checkBoxViews: [CheckBoxView] = [
-        CheckBoxView(text: SYText.terms_of_age, underLine: false),
-        CheckBoxView(text: SYText.terms_of_service, underLine: true),
-        CheckBoxView(text: SYText.terms_of_information, underLine: true),
-        CheckBoxView(text: SYText.terms_of_marketing, underLine: true)
+    private lazy var checkBoxViews: [CheckBoxView] = [
+        CheckBoxView(
+            text: SYText.terms_of_age,
+            checkBoxHanlder: {
+                self.validateButtonTags(1)
+            }),
+        CheckBoxView(
+            text: SYText.terms_of_service,
+            underLine: true,
+            checkBoxHanlder: {
+                self.validateButtonTags(2)}, 
+            labelHandler: {
+                self.touchUpLabelButton(2)
+            }),
+        CheckBoxView(
+            text: SYText.terms_of_information,
+            underLine: true, 
+            checkBoxHanlder: {
+                self.validateButtonTags(3)}, 
+            labelHandler: {
+                self.touchUpLabelButton(3)
+            }),
+        CheckBoxView(
+            text: SYText.terms_of_marketing,
+            underLine: true,
+            checkBoxHanlder: {
+                self.validateButtonTags(4)},
+            labelHandler: {
+                self.touchUpLabelButton(4)
+            })
     ]
     
     // MARK: - Properties
@@ -132,6 +156,26 @@ class SignUpBottomSheetVC: UIViewController {
                 self.dismiss(animated: true)
             })
             .disposed(by: disposeBag)
+    }
+    
+    private func presentTermOfUsePage(_ tag: Int) {
+        print("\(tag)에 관한 이용 약관 동의 창 열기")
+    }
+    
+    private func validateButtonTags(_ tag: Int) {
+        checkBoxTagArray[tag] = !checkBoxTagArray[tag]
+        
+        for i in 1...3 {
+            if checkBoxTagArray[i] == false {
+                continueButton.isEnabled = false
+                return
+            }
+        }
+        continueButton.isEnabled = true
+    }
+    
+    private func touchUpLabelButton(_ tag: Int) {
+        if tag != 1 { presentTermOfUsePage(tag) }
     }
 }
 
@@ -191,13 +235,7 @@ extension SignUpBottomSheetVC {
     }
     
     private func setupCheckBoxView() {
-        var tag = 1
-        checkBoxViews.map {
-            $0.tag = tag
-            tag += 1
-            $0.delegate = self
-            return $0
-        }.forEach {
+        checkBoxViews.forEach {
             stackView.addArrangedSubview($0)
         }
     }
@@ -257,27 +295,5 @@ extension SignUpBottomSheetVC {
             $0.top.equalTo(stackView.snp.bottom).offset(Constants.ContinueButton.topMargin)
             $0.bottom.equalToSuperview().offset(Constants.ContinueButton.bottomMargin)
         }
-    }
-}
-
-extension SignUpBottomSheetVC: CheckBoxViewDelegate {
-    private func presentTermOfUsePage(_ tag: Int) {
-        print("\(tag)에 관한 이용 약관 동의 창 열기")
-    }
-    
-    func validateButtonTags(_ tag: Int) {
-        checkBoxTagArray[tag] = !checkBoxTagArray[tag]
-        
-        for i in 1...3 {
-            if checkBoxTagArray[i] == false {
-                continueButton.isEnabled = false
-                return
-            }
-        }
-        continueButton.isEnabled = true
-    }
-    
-    func touchUpLabelButton(_ tag: Int) {
-        if tag != 1 { presentTermOfUsePage(tag) }
     }
 }

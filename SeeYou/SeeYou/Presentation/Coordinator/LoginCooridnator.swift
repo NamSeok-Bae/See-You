@@ -27,6 +27,7 @@ final class DefaultLoginCooridnator: Coordinator {
             self.navigationController.viewControllers = [vc]
         }
         self.navigationController.tabBarController?.selectedIndex = 0
+        self.navigationController.tabBarController?.tabBar.isHidden = false
     }
     
     private func showLoginViewController() {
@@ -48,7 +49,7 @@ final class DefaultLoginCooridnator: Coordinator {
             })
             .disposed(by: disposeBag)
         
-        navigationController.viewControllers = [vc]
+        navigationController.pushViewController(vc, animated: false)
     }
     
     private func showSignUpViewController() {
@@ -121,6 +122,82 @@ final class DefaultLoginCooridnator: Coordinator {
     }
     
     private func showSignUpInfomationVC(signUpType: SignUpType) {
+        if signUpType == .customer {
+            let vm = SignUpCustomerInformationVM()
+            let vc = SignUpCustomerInfomationVC(viewModel: vm)
+            
+            vm.signUpButtonDidTapped
+                .subscribe(onNext: { [weak self] in
+                    guard let self else { return }
+                    showSignUpSuccessVC(signUpType: signUpType)
+                })
+                .disposed(by: disposeBag)
+            
+            self.navigationController.pushViewController(vc, animated: true)
+        } else if signUpType == .guide {
+            let vm = SignUpGuideInformationVM()
+            let vc = SignUpGuideInformationVC(viewModel: vm)
+            
+            vm.signUpButtonDidTapped
+                .subscribe(onNext: { [weak self] in
+                    guard let self else { return }
+                    showSignUpSuccessVC(signUpType: signUpType)
+                })
+                .disposed(by: disposeBag)
+            
+            vm.activeAreaAdditionButtonDidTapped
+                .subscribe(onNext: { [weak self] in
+                    guard let self else { return }
+                    showOptionSelectVC(parentVM: vm, type: .activeArea)
+                })
+                .disposed(by: disposeBag)
+            
+            vm.provisionAdditionButtonDidTapped
+                .subscribe(onNext: { [weak self] in
+                    guard let self else { return }
+                    showOptionSelectVC(parentVM: vm, type: .provision)
+                })
+                .disposed(by: disposeBag)
+            
+            self.navigationController.pushViewController(vc, animated: true)
+        }
+    }
+    
+    private func showSignUpSuccessVC(signUpType: SignUpType) {
+        if signUpType == .customer {
+            let vc = SignUpCustomerSuccessVC()
+            vc.modalPresentationStyle = .fullScreen
+            
+            self.navigationController.present(vc, animated: true)
+        } else if signUpType == .guide {
+            let vc = SignUpCustomerSuccessVC()
+            vc.modalPresentationStyle = .fullScreen
+            
+            self.navigationController.present(vc, animated: true)
+        }
+    }
+    
+    private func showOptionSelectVC(parentVM: SignUpGuideInformationVM, type: OptionType) {
+        let vm = OptionSelectVM()
+        let vc = OptionSelectVC(viewModel: vm, type: type)
         
+        vm.multiplyButtonDidTapped
+            .subscribe(onNext: {
+                self.navigationController.popViewController(animated: true)
+            })
+            .disposed(by: disposeBag)
+        
+        vm.completeButtonDidTapped
+            .subscribe(onNext: { texts in
+                self.navigationController.popViewController(animated: true)
+                if type == .activeArea {
+                    parentVM.activeAreaTagSelected.accept(texts)
+                } else {
+                    parentVM.provisionTagSelected.accept(texts)
+                }
+            })
+            .disposed(by: disposeBag)
+        
+        self.navigationController.pushViewController(vc, animated: true)
     }
 }

@@ -7,11 +7,6 @@
 
 import UIKit
 
-protocol CheckBoxViewDelegate: AnyObject {
-    func validateButtonTags(_ tag: Int)
-    func touchUpLabelButton(_ tag: Int)
-}
-
 class CheckBoxView: UIView {
     enum Constants {
         enum CheckBoxButton {
@@ -26,23 +21,6 @@ class CheckBoxView: UIView {
     // MARK: - UI properties
     private lazy var checkBoxButton: UIButton = {
         let button = UIButton()
-        let imageConfig = UIImage.SymbolConfiguration(
-            pointSize: Constants.CheckBoxButton.height,
-            weight: .light)
-        let image = UIImage(systemName: "square")?
-            .withConfiguration(imageConfig)
-            .withTintColor(.Palette.gray400, renderingMode: .alwaysOriginal)
-        let fillImage = UIImage(systemName: "checkmark.square.fill")?
-            .withConfiguration(imageConfig)
-            .withTintColor(.Palette.primary500, renderingMode: .alwaysOriginal)
-        
-        button.setImage(image, for: .normal)
-        button.setImage(fillImage, for: .selected)
-        button.addTarget(
-            self,
-            action: #selector(buttonDidTapped(_:)),
-            for: .touchUpInside)
-        button.tag = 0
         
         return button
     }()
@@ -51,24 +29,37 @@ class CheckBoxView: UIView {
         let button = UIButton()
         button.setTitleColor(.Palette.gray1000, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16)
-        button.addTarget(
-            self,
-            action: #selector(buttonDidTapped(_:)),
-            for: .touchUpInside)
         button.tag = 1
         
         return button
     }()
     
     // MARK: - Properties
-    weak var delegate: CheckBoxViewDelegate?
     
     // MARK: - Lifecycles
-    init(text: String, underLine: Bool) {
+    init(text: String, underLine: Bool = false, type: CheckBoxType = .square) {
         super.init(frame: .zero)
         
         setupViews()
         configureUI()
+        setupCheckBox(type: type)
+        if underLine { setUnderLineButtonText(text) }
+        else { setButtonText(text) }
+    }
+    
+    init(
+        text: String,
+        underLine: Bool = false,
+        type: CheckBoxType = .square,
+        checkBoxHanlder: (() -> Void)? = nil,
+        labelHandler: (() -> Void)? = nil
+    ) {
+        super.init(frame: .zero)
+        
+        setupViews()
+        configureUI()
+        setupCheckBox(type: type, handler: checkBoxHanlder)
+        setupLabel(handler: labelHandler)
         if underLine { setUnderLineButtonText(text) }
         else { setButtonText(text) }
     }
@@ -111,6 +102,33 @@ class CheckBoxView: UIView {
         configureLabelButton()
     }
     
+    private func setupCheckBox(type: CheckBoxType, handler: (() -> Void)? = nil) {
+        let imageConfig = UIImage.SymbolConfiguration(
+            pointSize: Constants.CheckBoxButton.height,
+            weight: .light)
+        let image = UIImage(systemName: type.defaultImageName)?
+            .withConfiguration(imageConfig)
+            .withTintColor(.Palette.gray400, renderingMode: .alwaysOriginal)
+        let fillImage = UIImage(systemName: type.checkImageName)?
+            .withConfiguration(imageConfig)
+            .withTintColor(.Palette.primary500, renderingMode: .alwaysOriginal)
+        
+        checkBoxButton.setImage(image, for: .normal)
+        checkBoxButton.setImage(fillImage, for: .selected)
+        checkBoxButton.addAction(
+            UIAction(handler: { _ in
+                self.checkBoxButton.isSelected = self.checkBoxButton.isSelected ? false : true
+                handler?()
+            }),
+            for: .touchUpInside)
+    }
+    
+    private func setupLabel(handler: (() -> Void)? = nil) {
+        labelButton.addAction(
+            UIAction(handler: { _ in handler?() }),
+            for: .touchUpInside)
+    }
+    
     private func configureCheckBoxButton() {
         checkBoxButton.snp.makeConstraints {
             $0.top.bottom.leading.equalToSuperview()
@@ -124,18 +142,11 @@ class CheckBoxView: UIView {
         }
     }
     
-    @objc private func buttonDidTapped(_ sender: UIButton) {
-        let tag = sender.tag
-        switch tag {
-        case 0:
-            print("checkbox button tapped")
-            checkBoxButton.isSelected = checkBoxButton.isSelected ? false : true
-            delegate?.validateButtonTags(self.tag)
-        case 1:
-            print("label Button Tapped")
-            delegate?.touchUpLabelButton(self.tag)
-        default:
-            break
-        }
+    func check() {
+        self.checkBoxButton.isSelected = true
+    }
+    
+    func uncheck() {
+        self.checkBoxButton.isSelected = false
     }
 }

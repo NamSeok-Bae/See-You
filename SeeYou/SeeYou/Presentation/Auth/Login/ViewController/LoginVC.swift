@@ -180,7 +180,7 @@ class LoginVC: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        setupNavigationBar()
+        setupTabBar()
     }
     
     // MARK: - Helpers
@@ -306,6 +306,10 @@ extension LoginVC {
         navigationItem.rightBarButtonItem = multiplyButton
         navigationController?.navigationBar.tintColor = .black
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
+    }
+    
+    private func setupTabBar() {
+        tabBarController?.tabBar.isHidden = true
     }
     
     private func configureUI() {

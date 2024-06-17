@@ -87,6 +87,109 @@ enum SYText {
     /// 재전송
     static let resend = "再次发送"
     
+    // MARK: - 회원정보 입력 화면
+    
+    /// 더 즐겁고 안전한 여행을 위해 회원정보를 입력해주세요
+    static let signup_info_title = "더 즐겁고 안전한 여행을 위해\n회원정보를 입력해주세요"
+    
+    /// 닉네임
+    static let nickname = "닉네임"
+    
+    /// 닉네임을 입력해주세요
+    static let nickname_placeholder = "닉네임을 입력해주세요"
+    
+    static let nickname_error = "사용할 수 없는 닉네임입니다."
+    
+    static let nickname_success = "사용할 수 있는 닉네임입니다."
+    
+    /// 생년월일
+    static let birth_date = "생년월일"
+    
+    /// 생년월일 6자리를 입력해주세요 예) 980102
+    static let birth_date_placeholder = "생년월일 6자리를 입력해주세요 예) 980102"
+    
+    static let birth_date_error = "올바른 생년월일을 입력해주세요."
+    
+    /// 성별
+    static let gender = "성별"
+    
+    /// 국적
+    static let nationality = "국적"
+    
+    /// 회원 가입하기
+    static let become_member = "회원 가입하기"
+    
+    /// 한국 거주기간
+    static let period_of_residence = "한국 거주기간"
+    
+    /// 연 단위로 입력해주세요
+    static let period_of_residene_placeholder = "연 단위로 입력해주세요"
+    
+    /// 한국어 수준
+    static let korean_level = "한국어 수준"
+    
+    /// 중국어 수준
+    static let chinese_level = "중국어 수준"
+    
+    /// 언어 수준 단계
+    enum LanguageLevelType: String, CaseIterable {
+        case beginner
+        case intermediateLow
+        case intermediate
+        case intermediateHigh
+        case advanced
+        
+        init?(index: Int) {
+            switch index {
+            case 0:
+                self = .beginner
+            case 1:
+                self = .intermediateLow
+            case 2:
+                self = .intermediate
+            case 3:
+                self = .intermediateHigh
+            case 4:
+                self = .advanced
+            default:
+                return nil
+            }
+        }
+        
+        func toName() -> String {
+            switch self {
+            case .beginner:
+                return "최하"
+            case .intermediateLow:
+                return "중하"
+            case .intermediate:
+                return "중"
+            case .intermediateHigh:
+                return "중상"
+            case .advanced:
+                return "최상"
+            }
+        }
+    }
+    
+    /// 활동지역
+    static let active_area = "활동지역"
+    
+    /// 제공 서비스
+    static let provision_of_services = "제공 서비스"
+    
+    /// 추가
+    static let additional = "추가"
+    
+    /// MBTI를 입력해주세요
+    static let mbti_placeholder = "MBTI를 입력해주세요"
+    
+    /// 자기소개
+    static let introduce_myself = "자기소개"
+    
+    /// 자기소개를 입력해주세요
+    static let introduce_myself_placeholder = "자기소개를 입력해주세요"
+    
     // MARK: -  Warning 화면
     
     static let warning_title = "임시코드가 오지 않나요?"

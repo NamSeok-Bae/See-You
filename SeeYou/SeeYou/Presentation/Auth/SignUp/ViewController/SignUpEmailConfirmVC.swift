@@ -202,8 +202,9 @@ class SignUpEmailConfirmVC: UIViewController {
                     _ in self.emailTextField.text ?? ""
                 }.asObservable(),
             confirmButtonDidTapped:
-                confirmButton.rx.tap.map {
-                    _ in self.confirmTextField.text ?? ""
+                confirmButton.rx.tap.map { _ in
+                    self.timer.invalidate()
+                    return self.confirmTextField.text ?? ""
                 }.asObservable()
         )
         
