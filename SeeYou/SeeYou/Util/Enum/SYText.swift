@@ -8,9 +8,17 @@
 import Foundation
 
 enum SYText {
+    // MARK: - 탭 바
+    static let home = "홈"
+    static let matching = "나의 매칭"
+    static let message = "쪽지함"
+    static let my = "my"
+    
     // MARK: - 로그인 화면
     static let email = "邮箱"
-    static let email_placeholder = "请输入您的邮箱地址"
+    static let email_use_placeholder = "请输入您的邮箱地址"
+    
+    /// 이메일 주소를 확인해주세요
     static let email_validate_error = "* 请再次确认一下邮箱地址。"
     
     static let password = "密码"
@@ -22,19 +30,169 @@ enum SYText {
     static let password_reset = "重置密码"
     
     // MARK: - 회원가입 화면
+    
+    /// 한국 여행은\n喜友와 함께하세요!
     static let signup_title = "韩国旅游\n喜友与您相伴而行"
+    
+    /// 한국을 안내해줄 地陪가\n여러분들을 기다리고 있어요!
     static let signup_description = "众多韩国通地陪们待与您相遇"
     
+    /// 고객으로 시작
     static let signup_customer_title = "以顾客的身份登录"
+    
+    /// 地陪와 함께 편하게 여행을 즐겨보세요
     static let signup_customer_description = "和您的专属地陪享受韩国之行"
     
+    /// 地陪로 시작
     static let signup_guide_title = "以地陪身份登录"
+    
+    /// 고객과 여행하면서 수익을 얻어보세요
     static let signup_guide_description = "和顾客一起边旅行边赚钱"
     
+    /// 약관동의
     static let terms_of_use = "同意"
+    
+    /// [필수] 만 14세 이상입니다
     static let terms_of_age = "[必] 年满14周岁以上"
+    
+    /// [필수] 서비스 이용약관 동의
     static let terms_of_service = "[必] 同意服务使用条款"
+    
+    /// [필수] 개인정보 수집 및 이용 동의
     static let terms_of_information = "[必] 同意收集并使用个人信息"
+    
+    /// [선택] 마케팅 수신 정보 동의
     static let terms_of_marketing = "[选] 同意发送订阅信息"
+    
+    /// 동의하고 계속하기
     static let agree_and_continue = "同意并继续"
+    
+    // MARK: - 이메일 인증 화면
+    
+    /// 본인 확인을 위해\n이메일을 인증해주세요
+    static let email_confirm_title = "请认证邮箱地址\n确认个人信息"
+    
+    /// 사용하실 이메일을 입력해주세요
+    static let email_signup_placeholder = "请输入您的邮箱地址"
+    
+    /// 임시코드 보내기
+    static let temporary_code_send = "发送验证码"
+    
+    /// 인증번호를 입력해주세요
+    static let email_confirm_number_placeholder = "请输入验证码"
+    
+    /// * 입력시간을 초과하였습니다. 임시코드를 다시 보내주세요
+    static let email_confirm_validate_error = "* 已超过输入时间，请点击再次发送验证码。"
+    
+    /// 재전송
+    static let resend = "再次发送"
+    
+    // MARK: - 회원정보 입력 화면
+    
+    /// 더 즐겁고 안전한 여행을 위해 회원정보를 입력해주세요
+    static let signup_info_title = "더 즐겁고 안전한 여행을 위해\n회원정보를 입력해주세요"
+    
+    /// 닉네임
+    static let nickname = "닉네임"
+    
+    /// 닉네임을 입력해주세요
+    static let nickname_placeholder = "닉네임을 입력해주세요"
+    
+    static let nickname_error = "사용할 수 없는 닉네임입니다."
+    
+    static let nickname_success = "사용할 수 있는 닉네임입니다."
+    
+    /// 생년월일
+    static let birth_date = "생년월일"
+    
+    /// 생년월일 6자리를 입력해주세요 예) 980102
+    static let birth_date_placeholder = "생년월일 6자리를 입력해주세요 예) 980102"
+    
+    static let birth_date_error = "올바른 생년월일을 입력해주세요."
+    
+    /// 성별
+    static let gender = "성별"
+    
+    /// 국적
+    static let nationality = "국적"
+    
+    /// 회원 가입하기
+    static let become_member = "회원 가입하기"
+    
+    /// 한국 거주기간
+    static let period_of_residence = "한국 거주기간"
+    
+    /// 연 단위로 입력해주세요
+    static let period_of_residene_placeholder = "연 단위로 입력해주세요"
+    
+    /// 한국어 수준
+    static let korean_level = "한국어 수준"
+    
+    /// 중국어 수준
+    static let chinese_level = "중국어 수준"
+    
+    /// 언어 수준 단계
+    enum LanguageLevelType: String, CaseIterable {
+        case beginner
+        case intermediateLow
+        case intermediate
+        case intermediateHigh
+        case advanced
+        
+        init?(index: Int) {
+            switch index {
+            case 0:
+                self = .beginner
+            case 1:
+                self = .intermediateLow
+            case 2:
+                self = .intermediate
+            case 3:
+                self = .intermediateHigh
+            case 4:
+                self = .advanced
+            default:
+                return nil
+            }
+        }
+        
+        func toName() -> String {
+            switch self {
+            case .beginner:
+                return "최하"
+            case .intermediateLow:
+                return "중하"
+            case .intermediate:
+                return "중"
+            case .intermediateHigh:
+                return "중상"
+            case .advanced:
+                return "최상"
+            }
+        }
+    }
+    
+    /// 활동지역
+    static let active_area = "활동지역"
+    
+    /// 제공 서비스
+    static let provision_of_services = "제공 서비스"
+    
+    /// 추가
+    static let additional = "추가"
+    
+    /// MBTI를 입력해주세요
+    static let mbti_placeholder = "MBTI를 입력해주세요"
+    
+    /// 자기소개
+    static let introduce_myself = "자기소개"
+    
+    /// 자기소개를 입력해주세요
+    static let introduce_myself_placeholder = "자기소개를 입력해주세요"
+    
+    // MARK: -  Warning 화면
+    
+    static let warning_title = "임시코드가 오지 않나요?"
+    
+    static let warning_description = "스팸 메일함을 확인해주시거나 메일 주소를 한 번 더 확인해주세요."
 }

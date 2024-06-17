@@ -1,0 +1,41 @@
+//
+//  BaseEndpoint.swift
+//  SeeYou
+//
+//  Created by 배남석 on 5/30/24.
+//
+
+protocol NetworkInteractionable: Requestable, Responsable {}
+
+final class Endpoint<ResponseModel>: NetworkInteractionable where ResponseModel: Decodable {
+    typealias ResponseDTO = CommonDTO<ResponseModel>
+    
+    var scheme: String
+    var host: String
+    var method: HTTPMethod
+    var prefixPath: String
+    var responseType: ResponseType
+    var queryParams: Encodable?
+    var bodyParameters: Encodable?
+    var headers: [String: String]?
+    
+    init(
+        scheme: String = "http",
+        host: String = "43.203.118.104:9001",
+        method: HTTPMethod = .get,
+        prefixPath: String = "/api/v1/",
+        responseType: ResponseType,
+        queryParams: Encodable? = nil,
+        bodyParameters: Encodable? = nil,
+        headers: [String: String]? = ["Content-Type": "application/json"]
+    ) {
+        self.scheme = scheme
+        self.host = host
+        self.method = method
+        self.prefixPath = prefixPath
+        self.responseType = responseType
+        self.queryParams = queryParams
+        self.bodyParameters = bodyParameters
+        self.headers = headers
+    }
+}

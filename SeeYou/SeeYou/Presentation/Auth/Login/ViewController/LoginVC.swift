@@ -10,13 +10,17 @@ import SnapKit
 import RxSwift
 import RxCocoa
 
-class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
+protocol LoginVCDelegate: AnyObject {
+    func touchUpMultiplyButton()
+}
+
+class LoginVC: UIViewController {
     // MARK: - UI properties
     private lazy var multiplyButton = UIBarButtonItem(
         image: .multiply,
         style: .plain,
         target: self,
-        action: #selector(buttonDidTapped(_:))
+        action: nil
     )
     
     private let logoImageView: UIImageView = {
@@ -39,7 +43,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     private lazy var emailTextField: UITextField = {
         let textField = UITextField()
         textField.attributedPlaceholder = NSAttributedString(
-            string: SYText.email_placeholder,
+            string: SYText.email_use_placeholder,
             attributes: [.foregroundColor : UIColor.Palette.gray500])
         textField.font = UIFont.systemFont(ofSize: 16)
         textField.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
@@ -119,8 +123,6 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
         button.layer.borderWidth = 1
         button.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
         button.layer.borderColor = UIColor.clear.cgColor
-        button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
-        button.tag = 1
         
         return button
     }()
@@ -133,8 +135,6 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
         button.layer.borderWidth = 1
         button.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
         button.layer.backgroundColor = UIColor.Palette.gray0.cgColor
-        button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
-        button.tag = 2
         
         return button
     }()
@@ -150,16 +150,25 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
             value: NSUnderlineStyle.single.rawValue,
             range: NSRange(location: 0, length: text.count))
         button.setAttributedTitle(attributedString, for: .normal)
-        button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
-        button.tag = 3
         
         return button
     }()
     
     // MARK: - Properties
     var disposeBag = DisposeBag()
+    weak var delegate: LoginVCDelegate?
+    private let viewModel: LoginVM
     
     // MARK: - Lifecycles
+    init(viewModel: LoginVM) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -171,11 +180,7 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        setupNavigationBar()
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
+        setupTabBar()
     }
     
     // MARK: - Helpers
@@ -185,6 +190,36 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
     }
     
     private func bind() {
+        let input = LoginVM.Input(
+            multiplyButtonDidTapped: multiplyButton.rx.tap.asObservable(),
+            loginButtonDidTapped: loginButton.rx.tap.map {
+                (self.emailTextField.text ?? "", self.passwordTextField.text ?? "")
+            }.asObservable(),
+            signUpButtonDidTapped: signUpButton.rx.tap.asObservable(),
+            passwordResetButtonDidTapped: passwordResetButton.rx.tap.asObservable()
+        )
+        
+        let output = viewModel.transform(input: input)
+        
+        output.isValidateLogin
+            .subscribe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] isValidateLogin in
+                guard let self else { return }
+                
+                if isValidateLogin {
+                    emailTextField.layer.borderColor = UIColor.Palette.gray200.cgColor
+                    passwordTextField.layer.borderColor = UIColor.Palette.gray200.cgColor
+                    emailErrorLabel.isHidden = true
+                    passwordErrorLabel.isHidden = true
+                } else {
+                    emailTextField.layer.borderColor = UIColor.Palette.red500.cgColor
+                    passwordTextField.layer.borderColor = UIColor.Palette.red500.cgColor
+                    emailErrorLabel.isHidden = false
+                    passwordErrorLabel.isHidden = false
+                }
+            })
+            .disposed(by: disposeBag)
+        
         Observable.combineLatest(
             emailTextField.rx.text.orEmpty.skip(1).distinctUntilChanged(),
             passwordTextField.rx.text.orEmpty.skip(1).distinctUntilChanged(),
@@ -198,53 +233,13 @@ class LoginVC: UIViewController, HorizontallyFadeAnimatorDelegate {
                 }
             }).disposed(by: disposeBag)
     }
-    
-    @objc private func buttonDidTapped(_ sender: UIButton) {
-        let tag = sender.tag
-        
-        switch tag {
-        case 0:
-            self.tabBarController?.selectedIndex = 0
-        case 1:
-            guard let emailText = emailTextField.text,
-                  let passwordText = passwordTextField.text else { return }
-            if validateEmail(emailText) && validatePassword(passwordText) {
-                print("확인됨")
-                emailTextField.layer.borderColor = UIColor.Palette.gray200.cgColor
-                passwordTextField.layer.borderColor = UIColor.Palette.gray200.cgColor
-                emailErrorLabel.isHidden = true
-                passwordErrorLabel.isHidden = true
-            } else {
-                emailTextField.layer.borderColor = UIColor.Palette.red500.cgColor
-                passwordTextField.layer.borderColor = UIColor.Palette.red500.cgColor
-                emailErrorLabel.isHidden = false
-                passwordErrorLabel.isHidden = false
-            }
-        case 2:
-            self.navigationController?.pushViewController(
-                SignUpVC(),
-                animated: true)
-        case 3:
-            print("touch password reset btn")
-        default:
-            print("버튼에 대한 태그를 다시 확인해주세요.")
-        }
-    }
-    
-    private func validateEmail(_ input: String) -> Bool {
-        let regex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", regex)
-        let isValid = emailPredicate.evaluate(with: input)
+}
 
-        return isValid
-    }
-    
-    private func validatePassword(_ input: String) -> Bool {
-        let regex = "^(?=.*[A-Za-z])(?=.*[0-9]).{8,30}"
-        let predicate = NSPredicate(format: "SELF MATCHES %@", regex)
-        let isValid = predicate.evaluate(with: input)
-        
-        return isValid
+// MARK: - UITextField Delegate
+extension LoginVC: UITextFieldDelegate {
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        textField.tintColor = .Palette.primary500
+        return true
     }
 }
 
@@ -311,6 +306,10 @@ extension LoginVC {
         navigationItem.rightBarButtonItem = multiplyButton
         navigationController?.navigationBar.tintColor = .black
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
+    }
+    
+    private func setupTabBar() {
+        tabBarController?.tabBar.isHidden = true
     }
     
     private func configureUI() {
@@ -406,10 +405,3 @@ extension LoginVC {
     }
 }
 
-// MARK: - UITextField Delegate
-extension LoginVC: UITextFieldDelegate {
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        textField.tintColor = .Palette.primary500
-        return true
-    }
-}

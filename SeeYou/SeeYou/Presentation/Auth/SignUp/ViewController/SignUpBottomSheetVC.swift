@@ -7,6 +7,8 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxGesture
 
 class SignUpBottomSheetVC: UIViewController {
     // MARK: - UI properties
@@ -44,8 +46,6 @@ class SignUpBottomSheetVC: UIViewController {
         
         button.setImage(image, for: .normal)
         button.tintColor = .Palette.gray1000
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
         
         return button
     }()
@@ -61,44 +61,121 @@ class SignUpBottomSheetVC: UIViewController {
     
     private lazy var continueButton: UIButton = {
         let button = UIButton()
-        button.backgroundColor = .Palette.primary500
+        button.setBackgroundColor(.Palette.primary500, for: .normal)
+        button.setBackgroundColor(.Palette.primary500.withAlphaComponent(0.4), for: .disabled)
         button.clipsToBounds = true
         button.layer.cornerRadius = CGFloat.toScaledHeight(value: 8)
         button.setTitle(SYText.agree_and_continue, for: .normal)
         button.setTitleColor(.Palette.gray0, for: .normal)
-        button.addTarget(self, action: #selector(buttonDidTapped(_:)), for: .touchUpInside)
-        button.tag = 1
+        button.isEnabled = false
         
         return button
     }()
     
+    private lazy var checkBoxViews: [CheckBoxView] = [
+        CheckBoxView(
+            text: SYText.terms_of_age,
+            checkBoxHanlder: {
+                self.validateButtonTags(1)
+            }),
+        CheckBoxView(
+            text: SYText.terms_of_service,
+            underLine: true,
+            checkBoxHanlder: {
+                self.validateButtonTags(2)}, 
+            labelHandler: {
+                self.touchUpLabelButton(2)
+            }),
+        CheckBoxView(
+            text: SYText.terms_of_information,
+            underLine: true, 
+            checkBoxHanlder: {
+                self.validateButtonTags(3)}, 
+            labelHandler: {
+                self.touchUpLabelButton(3)
+            }),
+        CheckBoxView(
+            text: SYText.terms_of_marketing,
+            underLine: true,
+            checkBoxHanlder: {
+                self.validateButtonTags(4)},
+            labelHandler: {
+                self.touchUpLabelButton(4)
+            })
+    ]
+    
     // MARK: - Properties
+    private var checkBoxTagArray = Array(repeating: false, count: 5)
+    private let viewModel: SignUpBottomSheetVM
+    private let disposeBag = DisposeBag()
     
     // MARK: - Lifecycles
+    init(viewModel: SignUpBottomSheetVM) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        bind()
         setupViews()
-        setTapGesture()
         configureUI()
     }
     
     // MARK: - Helpers
-    @objc private func buttonDidTapped(_ sender: UIButton) {
-        let tag = sender.tag
+    private func bind() {
+        let input = SignUpBottomSheetVM.Input(
+            continueButtonDidTapped: continueButton.rx.tap.asObservable()
+        )
         
-        switch tag {
-        case 0:
-            self.dismiss(animated: true)
-        case 1:
-            print("continue button tapped")
-        default:
-            break
-        }
+        let output = viewModel.transform(input: input)
+        
+        dimmedView
+            .rx
+            .tapGesture()
+            .when(.recognized)
+            .map { _ in }
+            .subscribe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] in
+                guard let self else { return }
+                self.dismiss(animated: true)
+            })
+            .disposed(by: disposeBag)
+        
+        rightBarItem
+            .rx
+            .tap
+            .subscribe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] in
+                guard let self else { return }
+                self.dismiss(animated: true)
+            })
+            .disposed(by: disposeBag)
     }
     
-    @objc private func viewDidTapped(_ sender: AnyObject) {
-        self.dismiss(animated: true)
+    private func presentTermOfUsePage(_ tag: Int) {
+        print("\(tag)에 관한 이용 약관 동의 창 열기")
+    }
+    
+    private func validateButtonTags(_ tag: Int) {
+        checkBoxTagArray[tag] = !checkBoxTagArray[tag]
+        
+        for i in 1...3 {
+            if checkBoxTagArray[i] == false {
+                continueButton.isEnabled = false
+                return
+            }
+        }
+        continueButton.isEnabled = true
+    }
+    
+    private func touchUpLabelButton(_ tag: Int) {
+        if tag != 1 { presentTermOfUsePage(tag) }
     }
 }
 
@@ -112,6 +189,7 @@ extension SignUpBottomSheetVC {
         enum LeftBarItem {
             static let topMarign: CGFloat = .toScaledHeight(value: 32)
             static let leadingMargin: CGFloat = .toScaledWidth(value: 20)
+            static let height: CGFloat = .toScaledHeight(value: 26)
         }
         
         enum RightBarItem {
@@ -153,20 +231,13 @@ extension SignUpBottomSheetVC {
             bottomSheetView.addSubview($0)
         }
         
-        [
-            CheckBoxView(text: SYText.terms_of_age, underLine: false),
-            CheckBoxView(text: SYText.terms_of_service, underLine: true),
-            CheckBoxView(text: SYText.terms_of_information, underLine: true),
-            CheckBoxView(text: SYText.terms_of_marketing, underLine: true)
-        ].forEach {
-            stackView.addArrangedSubview($0)
-        }
+        setupCheckBoxView()
     }
     
-    private func setTapGesture() {
-        let tapGesture = UITapGestureRecognizer()
-        tapGesture.addTarget(self, action: #selector(viewDidTapped(_:)))
-        dimmedView.addGestureRecognizer(tapGesture)
+    private func setupCheckBoxView() {
+        checkBoxViews.forEach {
+            stackView.addArrangedSubview($0)
+        }
     }
     
     private func configureUI() {
@@ -195,6 +266,7 @@ extension SignUpBottomSheetVC {
         leftBarItem.snp.makeConstraints {
             $0.top.equalToSuperview().offset(Constants.LeftBarItem.topMarign)
             $0.leading.equalToSuperview().offset(Constants.LeftBarItem.leadingMargin)
+            $0.height.equalTo(Constants.LeftBarItem.height)
         }
     }
     

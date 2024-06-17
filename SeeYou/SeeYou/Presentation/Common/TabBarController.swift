@@ -7,7 +7,7 @@
 
 import UIKit
 
-class TabBarVC: UITabBarController {
+class TabBarController: UITabBarController {
     // MARK: - UI properties
         
     // MARK: - Properties
@@ -21,34 +21,13 @@ class TabBarVC: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        setupViews()
         self.delegate = self
     }
     
     // MARK: - Helpers
-
-    private func setupViews() {
-        let tabOne = UINavigationController(rootViewController: ViewController())
-        let tabOneBarItem = UITabBarItem(title: "홈", image: UIImage(systemName: "house"), tag: 0)
-        tabOne.tabBarItem = tabOneBarItem
-        
-        let tabTwo = UINavigationController(rootViewController: SecondVC())
-        let tabTwoBarItem = UITabBarItem(title: "탐색", image: UIImage(systemName: "house"), tag: 1)
-        tabTwo.tabBarItem = tabTwoBarItem
-        
-        let tabThree = UINavigationController(rootViewController: ThirdVC())
-        let tabThreeBarItem = UITabBarItem(title: "쪽지함", image: UIImage(systemName: "house"), tag: 2)
-        tabThree.tabBarItem = tabThreeBarItem
-        
-        let tabFour = UINavigationController(rootViewController: LoginVC())
-        let tabFourBarItem = UITabBarItem(title: "로그인", image: UIImage(systemName: "house"), tag: 3)
-        tabFour.tabBarItem = tabFourBarItem
-        
-        self.viewControllers = [tabOne, tabTwo, tabThree, tabFour]
-    }
 }
 
-extension TabBarVC: UITabBarControllerDelegate {
+extension TabBarController: UITabBarControllerDelegate {
     func tabBarController(
             _ tabBarController: UITabBarController,
             shouldSelect viewController: UIViewController
@@ -75,7 +54,7 @@ extension TabBarVC: UITabBarControllerDelegate {
                     toIndex = 1
                 } else if vc is ThirdVC {
                     toIndex = 2
-                } else if vc is LoginVC {
+                } else if vc is MyInfoVC {
                     toIndex = 3
                 }
             }
